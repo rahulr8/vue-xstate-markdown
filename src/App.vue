@@ -40,67 +40,67 @@
 </template>
 
 <script>
-import { createMachine, State, interpret } from 'xstate';
-import MarkdownIt from 'markdown-it';
-import { indent } from 'indent.js';
-import debounce from 'lodash.debounce';
+import { createMachine, State, interpret } from "xstate";
+import MarkdownIt from "markdown-it";
+import { indent } from "indent.js";
+import debounce from "lodash.debounce";
 
-import EyeIcon from './assets/icons/eye.svg';
-import EyeOffIcon from './assets/icons/eye-off.svg';
-import CodeIcon from './assets/icons/code.svg';
-import MenuIcon from './assets/icons/menu.svg';
+import EyeIcon from "./assets/icons/eye.svg";
+import EyeOffIcon from "./assets/icons/eye-off.svg";
+import CodeIcon from "./assets/icons/code.svg";
+import MenuIcon from "./assets/icons/menu.svg";
 
 const md = new MarkdownIt();
 
 const swapMachine = createMachine({
-  id: 'swap',
-  initial: 'visible',
+  id: "swap",
+  initial: "visible",
   states: {
     visible: {
       on: {
-        TOGGLE: 'hidden',
+        TOGGLE: "hidden"
       },
-      initial: 'rendered',
+      initial: "rendered",
       states: {
         rendered: {
           on: {
-            SWAP: 'raw',
-          },
+            SWAP: "raw"
+          }
         },
         raw: {
           on: {
-            SWAP: 'rendered',
-          },
+            SWAP: "rendered"
+          }
         },
         memo: {
-          type: 'history',
-        },
-      },
+          type: "history"
+        }
+      }
     },
     hidden: {
       on: {
-        TOGGLE: 'visible.memo',
-      },
-    },
-  },
+        TOGGLE: "visible.memo"
+      }
+    }
+  }
 });
 
-const savedState = JSON.parse(localStorage.getItem('state'));
-const savedData = localStorage.getItem('data');
+const savedState = JSON.parse(localStorage.getItem("state"));
+const savedData = localStorage.getItem("data");
 
 const previousState = State.create(savedState || swapMachine.initialState);
 const resolvedState = swapMachine.resolveState(previousState);
 
 const persistData = debounce(data => {
   try {
-    localStorage.setItem('data', data);
+    localStorage.setItem("data", data);
   } finally {
     // continue regardless of error
   }
 }, 500);
 
 export default {
-  name: 'App',
+  name: "App",
   components: { EyeIcon, EyeOffIcon, CodeIcon, MenuIcon },
   data() {
     return {
@@ -108,7 +108,7 @@ export default {
       current: swapMachine.initialState,
       content: savedData
         ? savedData.trim()
-        : '# Hello there!\n\n- Type some Markdown on the left\n- See HTML in the right\n- Magic\n\n![An orange jellyfish](https://i.picsum.photos/id/1069/400/250.jpg)',
+        : "# Hello there!\n\n- Type some Markdown on the left\n- See HTML in the right\n- Magic\n\n![An orange jellyfish](https://i.picsum.photos/id/1069/400/250.jpg)"
     };
   },
   computed: {
@@ -117,19 +117,19 @@ export default {
     },
     raw() {
       return indent.html(this.rendered, {
-        tabString: '  ',
+        tabString: "  "
       });
-    },
+    }
   },
   methods: {
     send(event) {
       this.swapService.send(event);
-    },
+    }
   },
   watch: {
     content(newContent) {
       persistData(newContent);
-    },
+    }
   },
   created() {
     this.swapService
@@ -137,13 +137,13 @@ export default {
         this.current = state;
 
         try {
-          localStorage.setItem('state', JSON.stringify(this.current));
+          localStorage.setItem("state", JSON.stringify(this.current));
         } finally {
           // continue regardless of error
         }
       })
       .start(resolvedState);
-  },
+  }
 };
 </script>
 
